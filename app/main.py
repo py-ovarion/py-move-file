@@ -1,16 +1,14 @@
 import os
+from pathlib import Path
 
 
 def move_file(command_request: str) -> None:
     command_list = command_request.split(" ")
     if len(command_list) == 3:
-        command = command_list[0]
-        source_path = command_list[1]
-        destination_path = command_list[2]
+        command, source_path, destination_path = command_list
 
         if command == "mv":
-            if destination_path.find("/") != -1:
-                make_dirs(destination_path[:destination_path.rfind("/")])
+            make_dirs(Path(os.path.dirname(destination_path)))
 
             with (open(source_path, "r") as source_file_object,
                   open(destination_path, "w") as destination_file_object):
@@ -18,13 +16,10 @@ def move_file(command_request: str) -> None:
             os.remove(source_path)
 
 
-def make_dirs(path: str) -> None:
-    dir_path = ""
-    for dirname in path.split("/"):
-        try:
-            dir_path += dirname
-            os.mkdir(dir_path)
-        except FileExistsError:
-            pass
-        finally:
-            dir_path += "/"
+def make_dirs(dir_path: Path) -> None:
+    dirs_list = dir_path.parts
+    current_path = ""
+    for dir_index in range(0, len(dirs_list)):
+        current_path = os.path.join(current_path, dirs_list[dir_index])
+        if not os.path.isdir(current_path):
+            os.mkdir(current_path)
